@@ -27,14 +27,25 @@ public class Main {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<String> orininalLogMessages = sc.parallelize(inputData);
-        JavaPairRDD<String, String> pairRdd = orininalLogMessages.mapToPair(rawValue -> {
+//        JavaPairRDD<String, String> pairRdd = orininalLogMessages.mapToPair(rawValue -> {
+//            String[] columns = rawValue.split(":");
+//            String level = columns[0];
+//            String date = columns[1];
+//            return new Tuple2<String, String>(level, date);
+//        });
+
+//        pairRdd.collect().forEach(System.out::println);
+
+        JavaPairRDD<String, Long> pairRdd = orininalLogMessages.mapToPair(rawValue -> {
             String[] columns = rawValue.split(":");
             String level = columns[0];
             String date = columns[1];
-            return new Tuple2<String, String>(level, date);
+            return new Tuple2<>(level, 1L);
         });
 
-        pairRdd.collect().forEach(System.out::println);
+        JavaPairRDD<String, Long> someRdd = pairRdd.reduceByKey((v1,v2) -> v1+v2);
+        someRdd.foreach(tuple -> System.out.println(tuple._1 + " has " + tuple._2 + " instances"));
+
 
 //        sc.parallelize(inputData)
 //                .mapToPair(rawValue -> new Tuple2<>(rawValue.split(":")[0], 1L))
