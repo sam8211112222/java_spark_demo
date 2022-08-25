@@ -3,6 +3,7 @@ package org.example;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
@@ -25,9 +26,19 @@ public class Main {
         SparkConf conf = new SparkConf().setAppName("startingSpark").setMaster("local[*]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        sc.parallelize(inputData)
-                .mapToPair(rawValue -> new Tuple2<>(rawValue.split(":")[0], 1L))
-                .reduceByKey((value1, value2) -> value1 + value2)
-                .foreach(tuple -> System.out.println(tuple._1 + " has " + tuple._2 + " instances"));
+        JavaRDD<String> orininalLogMessages = sc.parallelize(inputData);
+        JavaPairRDD<String, String> pairRdd = orininalLogMessages.mapToPair(rawValue -> {
+            String[] columns = rawValue.split(":");
+            String level = columns[0];
+            String date = columns[1];
+            return new Tuple2<String, String>(level, date);
+        });
+
+        pairRdd.collect().forEach(System.out::println);
+
+//        sc.parallelize(inputData)
+//                .mapToPair(rawValue -> new Tuple2<>(rawValue.split(":")[0], 1L))
+//                .reduceByKey((value1, value2) -> value1 + value2)
+//                .foreach(tuple -> System.out.println(tuple._1 + " has " + tuple._2 + " instances"));
     }
 }
