@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import scala.Tuple2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +17,9 @@ public class Main {
         SparkConf conf = new SparkConf().setAppName("startingSpark").setMaster("local[*]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 //        Double plusResult = plus(sc);
-        Double sqrtResult = division(sc);
+//        Double sqrtResult = division(sc);
 //        System.out.println(plusResult);
+        tupleDemp(sc);
         sc.close();
     }
 
@@ -48,6 +50,18 @@ public class Main {
         JavaRDD<Long> singleIntegerRdd = sqrtRdd.map(value -> 1L);
         Long count = singleIntegerRdd.reduce((v1,v2) -> v1 + v2);
         System.out.println(count);
+        return null;
+    }
+
+    public static Double tupleDemp(JavaSparkContext sc){
+        List<Integer> inputData = new ArrayList<Integer>();
+        inputData.add(34);
+        inputData.add(12);
+        inputData.add(3242);
+        inputData.add(49);
+        JavaRDD<Integer> originalIntegers = sc.parallelize(inputData);
+        JavaRDD <Tuple2<Integer,Double>>sqrtRdd = originalIntegers.map(value -> new Tuple2<>(value,Math.sqrt(value)));
+        sqrtRdd.collect().forEach(System.out::println);
         return null;
     }
 }
