@@ -10,6 +10,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -27,39 +28,12 @@ public class Main {
         SparkConf conf = new SparkConf().setAppName("startingSpark").setMaster("local[*]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-//        JavaRDD<String> orininalLogMessages = sc.parallelize(inputData);
-//        JavaPairRDD<String, String> pairRdd = orininalLogMessages.mapToPair(rawValue -> {
-//            String[] columns = rawValue.split(":");
-//            String level = columns[0];
-//            String date = columns[1];
-//            return new Tuple2<String, String>(level, date);
-//        });
 
-//        pairRdd.collect().forEach(System.out::println);
+        sc.parallelize(inputData)
+                .flatMap(value -> Arrays.asList(value.split(" ")).iterator())
+                .filter(word -> word.length() > 1)
+                .collect().forEach(System.out::println);
 
-//        JavaPairRDD<String, Long> pairRdd = orininalLogMessages.mapToPair(rawValue -> {
-//            String[] columns = rawValue.split(":");
-//            String level = columns[0];
-//            String date = columns[1];
-//            return new Tuple2<>(level, 1L);
-//        });
-//
-//        JavaPairRDD<String, Long> someRdd = pairRdd.reduceByKey((v1,v2) -> v1+v2);
-//        someRdd.foreach(tuple -> System.out.println(tuple._1 + " has " + tuple._2 + " instances"));
-
-
-//        sc.parallelize(inputData)
-//                .mapToPair(rawValue -> new Tuple2<>(rawValue.split(":")[0], 1L))
-//                .reduceByKey((value1, value2) -> value1 + value2)
-//                .foreach(tuple -> System.out.println(tuple._1 + " has " + tuple._2 + " instances"));
-
-
-        // groupbykey version - not recommended due to performance (see later) AND the iterable
-        // is awkward to work with.
-		sc.parallelize(inputData)
-		  .mapToPair(rawValue -> new Tuple2<>(rawValue.split(":")[0] , 1L  ))
-		  .groupByKey()
-		  .foreach( tuple -> System.out.println(tuple._1 + " has " + Iterables.size(tuple._2) + " instances") );
 
         sc.close();
 
